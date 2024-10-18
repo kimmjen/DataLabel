@@ -21,7 +21,7 @@ const model = ref("");
 const rows = ref([]);
 const columns = ref([]);
 const filename = ref(null)
-
+const labelOptions = ref(['Positive', 'Negative', 'Neutral']);
 
 const loading = ref(false);
 const progress = ref(false)
@@ -53,6 +53,14 @@ function submit() {
             align: 'left'  // 기본 정렬 설정
           }));
 
+          // 라벨 열 추가
+          columns.value.push({
+            name: 'label',
+            label: 'Label',
+            field: 'label',
+            align: 'left',
+            format: (val, row) => row.label || 'Select Label'
+          });
 
           loading.value = false;  // 로딩 상태 종료
           alert('파일 업로드 성공');
@@ -65,6 +73,10 @@ function submit() {
   } else {
     alert('파일을 선택해주세요.');
   }
+}
+// 레이블 변경 시 호출되는 함수
+function updateLabel(row, label) {
+  row.label = label;
 }
 </script>
 
@@ -95,16 +107,21 @@ function submit() {
             :rows="rows"
             :columns="columns"
             row-key="id"
-            :title="filename ? filename : '업로드된 파일'"/>
-      </q-page>
-    </div>
-    <div class="row">
-      <q-page class="q-pa-md">
-        <q-table
-            :rows="rows"
-            :columns="columns"
-            row-key="id"
-            :title="filename ? filename : '업로드된 파일'"/>
+            :title="filename ? filename : '업로드된 파일'">
+          <!-- 레이블 드롭다운을 각 행에 추가 -->
+          <template v-slot:body-cell-label="props">
+            <q-td :props="props">
+              <q-select
+                  v-model="props.row.label"
+                  :options="labelOptions"
+                  @update:model-value="updateLabel(props.row, $event)"
+                  emit-value
+                  outlined
+                  dense
+              />
+            </q-td>
+          </template>
+        </q-table>
       </q-page>
     </div>
   </div>
